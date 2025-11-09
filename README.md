@@ -1,66 +1,229 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Simple Subscription Platform
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+This is a simple REST API built with **Laravel 9** and **MySQL**.  
+Users can subscribe to a website, and when a new post is published, all subscribers receive an email containing the post title and description.
 
-## About Laravel
+---
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## Main Features
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+-   Simple REST API (no authentication)
+-   Subscribe users to websites
+-   Create new posts for a website
+-   Command to send posts to subscribers
+-   Queue-based background email sending
+-   Prevent duplicate email deliveries
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+---
 
-## Learning Laravel
+## Installation
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+### 1. Clone and install dependencies
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+```bash
+git clone https://github.com/<username>/simple-subscription-platform.git
+cd simple-subscription-platform
+composer install
+```
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains over 2000 video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+### 2. Environment setup
 
-## Laravel Sponsors
+Copy the example file and generate a key:
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the Laravel [Patreon page](https://patreon.com/taylorotwell).
+```bash
+cp .env.example .env
+php artisan key:generate
+```
 
-### Premium Partners
+Edit `.env` with your local database and queue settings:
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Cubet Techno Labs](https://cubettech.com)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[Many](https://www.many.co.uk)**
-- **[Webdock, Fast VPS Hosting](https://www.webdock.io/en)**
-- **[DevSquad](https://devsquad.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[OP.GG](https://op.gg)**
-- **[WebReinvent](https://webreinvent.com/?utm_source=laravel&utm_medium=github&utm_campaign=patreon-sponsors)**
-- **[Lendio](https://lendio.com)**
+```
+APP_URL=http://127.0.0.1:8000
 
-## Contributing
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=simple_subscription_platform
+DB_USERNAME=root
+DB_PASSWORD=
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+QUEUE_CONNECTION=database
 
-## Code of Conduct
+MAIL_MAILER=log
+MAIL_FROM_ADDRESS=no-reply@example.com
+MAIL_FROM_NAME="Subscription API"
+```
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+> For local testing, use `MAIL_MAILER=log` — all sent emails will appear inside `storage/logs/laravel.log`.
 
-## Security Vulnerabilities
+### 3. Run migrations
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+```bash
+php artisan migrate
+```
+
+### 4. (Optional) Seed demo websites
+
+```bash
+php artisan db:seed --class=WebsiteSeeder
+```
+
+---
+
+## How to Run
+
+### Start the server
+
+```bash
+php artisan serve
+```
+
+API runs at: `http://127.0.0.1:8000`
+
+### Run the queue worker
+
+```bash
+php artisan queue:work --queue=emails --tries=3
+```
+
+---
+
+## API Endpoints
+
+### 1. Subscribe to a website
+
+**POST** `/api/websites/{website}/subscribe`
+
+**Body:**
+
+```json
+{
+    "email": "john.due@example.com",
+    "name": "John Due"
+}
+```
+
+**Response:**
+
+```json
+{ "message": "Subscribed" }
+```
+
+---
+
+### 2. Create a post
+
+**POST** `/api/websites/{website}/posts`
+
+**Body:**
+
+```json
+{
+    "title": "The First Post in 2025",
+    "description": "Decription The First Post in 2025"
+}
+```
+
+**Response:**
+
+```json
+{
+    "message": "Post created",
+    "data": {
+        "id": 1,
+        "website_id": 1,
+        "title": "Hello",
+        "description": "World"
+    }
+}
+```
+
+---
+
+## Sending Emails to Subscribers
+
+Run the command below to find all new posts and send them to each website’s subscribers:
+
+```bash
+php artisan posts:send-new
+```
+
+This command will queue jobs to send emails in the background.  
+Each job will be processed by the queue worker.
+
+---
+
+## Quick Testing
+
+1. Start the server:
+    ```bash
+    php artisan serve
+    ```
+2. Run the queue worker:
+    ```bash
+    php artisan queue:work
+    ```
+3. Subscribe a user:
+    ```bash
+    curl -X POST http://127.0.0.1:8000/api/websites/1/subscribe \
+    -H "Content-Type: application/json" \
+    -d '{"email":"john.due@example.com","name":"John Due"}'
+    ```
+4. Create a post:
+    ```bash
+    curl -X POST http://127.0.0.1:8000/api/websites/1/posts \
+    -H "Content-Type: application/json" \
+    -d '{"title":"The First Post in 2025","description":"Decription The First Post in 2025"}'
+    ```
+5. Dispatch email jobs:
+    ```bash
+    php artisan posts:send-new
+    ```
+
+---
+
+## Project Structure
+
+```
+app/
+ ├── Console/Commands/SendNewPostsCommand.php
+ ├── Jobs/SendPostEmailJob.php
+ ├── Mail/NewPostMail.php
+ ├── Models/
+ │   ├── User.php
+ │   ├── Website.php
+ │   ├── Subscription.php
+ │   ├── Post.php
+ │   └── PostDelivery.php
+ ├── Http/
+ │   ├── Controllers/
+ │   │   ├── PostController.php
+ │   │   └── SubscriptionController.php
+ │   └── Requests/
+ │       ├── CreatePostRequest.php
+ │       └── SubscribeRequest.php
+resources/
+ └── views/emails/posts/new.blade.php
+```
+
+---
+
+## Notes
+
+-   Emails are sent through the queue system in the background.
+-   Duplicate deliveries are prevented using a unique key on the `post_deliveries` table.
+-   The command `posts:send-new` can be run manually or scheduled using cron.
+
+---
 
 ## License
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+This project is created for demonstration and technical evaluation purposes only.
+
+---
+
+### Author
+
+**Harun Al Rosyid**  
+[harunalrosyid.com](https://harunalrosyid.com)  
+hello@harunalrosyid.com
