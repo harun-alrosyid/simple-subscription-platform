@@ -132,8 +132,8 @@ php artisan queue:work --queue=emails --tries=3
     "data": {
         "id": 1,
         "website_id": 1,
-        "title": "Hello",
-        "description": "World"
+        "title": "The First Post in 2025",
+        "description": "Decription The First Post in 2025"
     }
 }
 ```
