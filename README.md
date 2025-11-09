@@ -120,7 +120,7 @@ php artisan queue:work --queue=emails --tries=3
 ```json
 {
     "title": "The First Post in 2025",
-    "description": "Decription The First Post in 2025"
+    "description": "Description The First Post in 2025"
 }
 ```
 
@@ -133,7 +133,7 @@ php artisan queue:work --queue=emails --tries=3
         "id": 1,
         "website_id": 1,
         "title": "The First Post in 2025",
-        "description": "Decription The First Post in 2025"
+        "description": "Description The First Post in 2025"
     }
 }
 ```
